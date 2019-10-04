@@ -1,0 +1,34 @@
+"""
+LEGION (https://govanguard.io)
+Copyright (c) 2018 GoVanguard
+
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+    License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+    version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+    details.
+
+    You should have received a copy of the GNU General Public License along with this program.
+    If not, see <http://www.gnu.org/licenses/>.
+
+Author(s): Dmitriy Dubson (d.dubson@gmail.com)
+"""
+from PyQt5.QtWidgets import QFileDialog
+
+from app.actions.exportSessionAsXml.AbstractExportAsXmlObserver import AbstractExportAsXmlObserver
+
+
+class QtExportAsXmlObserver(AbstractExportAsXmlObserver):
+    def __init__(self, mainAppWindow):
+        self.mainAppWindow = mainAppWindow
+
+    def onXmlExportReceive(self, xmlPayload: str) -> None:
+        self.promptWithSaveFileDialog()
+        print(f"{xmlPayload} was the xml.")
+
+    def promptWithSaveFileDialog(self):
+        filename, _ = QFileDialog.getSaveFileName(self.mainAppWindow, 'Export session as XML', '.',
+                                                  filter='Exported Legion session (*.xml)')
+        print(f"filename: {filename}")

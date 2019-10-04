@@ -14,10 +14,11 @@ Copyright (c) 2018 GoVanguard
     You should have received a copy of the GNU General Public License along with this program.
     If not, see <http://www.gnu.org/licenses/>.
 """
-
+from app.actions.exportSessionAsXml.ExportAsXmlObservable import ExportAsXmlObservable
 from app.shell.DefaultShell import DefaultShell
 from ui.eventfilter import MyEventFilter
 from ui.gui import Ui_MainWindow
+from ui.observers.QtExportAsXmlObserver import QtExportAsXmlObserver
 from utilities.stenoLogging import *
 
 log = get_logger('legion', path="./log/legion-startup.log")
@@ -60,6 +61,7 @@ except ImportError as e:
     exit(1)
 
 from ui.view import *
+from ui.actions.ExportAsXmlAction import ExportAsXmlAction
 from controller.controller import *
 
 # Main application declaration and loop
@@ -93,11 +95,15 @@ if __name__ == "__main__":
 
     db = Database(tf.name)
     hostRepository = HostRepository(db)
+    logic = Logic(project_name=tf.name, db=db, shell=shell, hostRepository=hostRepository)   # Model prep (logic, db and models)
 
-    # Model prep (logic, db and models)
-    logic = Logic(project_name=tf.name, db=db, shell=shell, hostRepository=hostRepository)
-    view = View(ui, MainWindow, shell)  # View prep (gui)
-    controller = Controller(view, logic, hostRepository)  # Controller prep (communication between model and view)
+    exportAsXmlObserver = QtExportAsXmlObserver(MainWindow)
+    exportAsXmlObservable = ExportAsXmlObservable()
+    exportAsXmlObservable.attach(exportAsXmlObserver)
+    exportAsXmlAction = ExportAsXmlAction(exportAsXmlObservable)
+
+    view = View(ui, MainWindow, shell, exportAsXmlAction)   # View prep (gui)
+    controller = Controller(view, logic, hostRepository)   # Controller prep (communication between model and view)
     view.qss = qss_file
 
     myFilter = MyEventFilter(view, MainWindow)  # to capture events
