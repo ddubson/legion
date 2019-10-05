@@ -22,7 +22,3 @@ class AbstractExportAsXmlObserver(ABC):
     @abstractmethod
     def onExportedSuccessfully(self) -> None:
         pass
-
-    @abstractmethod
-    def onFileNameSet(self, fileName: str) -> None:
-        pass

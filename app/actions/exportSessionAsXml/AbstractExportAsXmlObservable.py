@@ -31,9 +31,5 @@ class AbstractExportAsXmlObservable(ABC):
         self._observers.remove(observer)
 
     @abstractmethod
-    def notifyXmlExported(self, exportedXml) -> None:
-        pass
-
-    @abstractmethod
-    def notifyFileNameSet(self, fileName: str) -> None:
+    def notifyXmlExported(self) -> None:
         pass

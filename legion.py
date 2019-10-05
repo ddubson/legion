@@ -98,7 +98,7 @@ if __name__ == "__main__":
     logic = Logic(project_name=tf.name, db=db, shell=shell, hostRepository=hostRepository)   # Model prep (logic, db and models)
 
     exportAsXmlObserver = QtExportAsXmlObserver(MainWindow)
-    exportAsXmlObservable = ExportAsXmlObservable()
+    exportAsXmlObservable = ExportAsXmlObservable(shell)
     exportAsXmlObservable.attach(exportAsXmlObserver)
     exportAsXmlAction = ExportAsXmlAction(MainWindow, exportAsXmlObservable)
 

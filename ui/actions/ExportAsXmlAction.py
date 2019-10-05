@@ -27,8 +27,7 @@ class ExportAsXmlAction:
 
     def exportAsXml(self) -> None:
         fileName: str = self.promptWithSaveFileDialog()
-        self.exportAsXmlObservable.fileNameSetAs(fileName)
-        self.exportAsXmlObservable.exportAsXml()
+        self.exportAsXmlObservable.exportAsXml(fileName)
 
     def promptWithSaveFileDialog(self) -> str:
         filename, _ = QFileDialog.getSaveFileName(self.mainAppWindow, 'Export session as XML', '.',

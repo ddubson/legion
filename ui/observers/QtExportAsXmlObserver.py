@@ -23,8 +23,5 @@ class QtExportAsXmlObserver(AbstractExportAsXmlObserver):
     def __init__(self, mainAppWindow):
         self.mainAppWindow = mainAppWindow
 
-    def onFileNameSet(self, fileName: str) -> None:
-        pass
-
     def onExportedSuccessfully(self) -> None:
-        pass
+        print("Session exported successfully!")

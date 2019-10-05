@@ -16,23 +16,17 @@ Copyright (c) 2018 GoVanguard
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
 from app.actions.exportSessionAsXml.AbstractExportAsXmlObservable import AbstractExportAsXmlObservable
+from app.shell.Shell import Shell
 
 
 class ExportAsXmlObservable(AbstractExportAsXmlObservable):
-    def notifyXmlExported(self, exportedXml) -> None:
+    def __init__(self, shell: Shell):
+        self.shell = shell
+
+    def notifyXmlExported(self) -> None:
         for observer in self._observers:
             observer.onExportedSuccessfully()
 
-    def notifyFileNameSet(self, fileName: str) -> None:
-        for observer in self._observers:
-            observer.onFileNameSet(fileName)
-
-    def fileNameSetAs(self, fileName: str) -> None:
-        self.notifyFileNameSet(fileName)
-
-    def exportAsXml(self) -> None:
-        fileToExport = open("my-xml-session.xml", "w+")
-        fileToExport.write("<my-xml-session></my-xml-session>")
-        fileToExport.close()
-        print(f"file exported!")
+    def exportAsXml(self, fileName: str) -> None:
+        self.shell.writeFile(fileName, "<my-xml></my-xml>")
         self.notifyXmlExported()

@@ -33,3 +33,7 @@ class Shell(ABC):
     @abstractmethod
     def isFile(self, name: str) -> bool:
         pass
+
+    @abstractmethod
+    def writeFile(self, fileName: str, contents: str) -> None:
+        pass

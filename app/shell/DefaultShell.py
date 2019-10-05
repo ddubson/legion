@@ -7,6 +7,10 @@ from app.shell.Shell import Shell
 
 
 class DefaultShell(Shell):
+    def writeFile(self, fileName: str, contents: str) -> None:
+        with open(fileName, "w+") as fileToExport:
+            fileToExport.write(contents)
+
     def get_current_working_directory(self) -> str:
         return str(subprocess.check_output("echo $PWD", shell=True)[:-1].decode()) + '/'
 

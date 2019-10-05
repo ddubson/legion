@@ -22,9 +22,9 @@ from unittest.mock import MagicMock, patch
 class ExportAsXmlActionTest(unittest.TestCase):
     @patch("PyQt5.QtWidgets.QFileDialog")
     def setUp(self, fileDialog) -> None:
-        from ui.actions.ExportAsXmlAction import ExportAsXmlAction
         self.fileDialog = fileDialog
         self.fileDialog.getSaveFileName.return_value = ("some-file.xml", "")
+        from ui.actions.ExportAsXmlAction import ExportAsXmlAction
         self.mainAppWindow = MagicMock()
         self.exportAsXmlObservable = MagicMock()
         self.exportAsXmlAction = ExportAsXmlAction(self.mainAppWindow, self.exportAsXmlObservable)
@@ -33,5 +33,4 @@ class ExportAsXmlActionTest(unittest.TestCase):
         self.exportAsXmlAction.exportAsXml()
 
         self.fileDialog.getSaveFileName.assert_called_once()
-        self.exportAsXmlObservable.fileNameSetAs.assert_called_once_with("some-file.xml")
-        self.exportAsXmlObservable.exportAsXml.assert_called_once()
+        self.exportAsXmlObservable.exportAsXml.assert_called_once_with("some-file.xml")

@@ -15,8 +15,8 @@ Copyright (c) 2018 GoVanguard
 
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
-import unittest
 import os.path
+import unittest
 
 
 class DefaultShellTest(unittest.TestCase):

@@ -16,32 +16,27 @@ Copyright (c) 2018 GoVanguard
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
 import unittest
+from unittest.mock import MagicMock
 
 from app.actions.exportSessionAsXml.AbstractExportAsXmlObserver import AbstractExportAsXmlObserver
 from app.actions.exportSessionAsXml.ExportAsXmlObservable import ExportAsXmlObservable
 
 
 class MockObserver(AbstractExportAsXmlObserver):
-    fileNameThatWasSet = None
     xmlExported = False
 
-    def onFileNameSet(self, fileName: str) -> None:
-        self.fileNameThatWasSet = fileName
-
-    def onXmlExportReceive(self, xmlPayload: str) -> None:
+    def onExportedSuccessfully(self) -> None:
         self.xmlExported = True
 
 
 class ExportAsXmlObservableTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.exportAsXmlObservable = ExportAsXmlObservable()
+        self.mockShell = MagicMock()
+        self.exportAsXmlObservable = ExportAsXmlObservable(self.mockShell)
         self.mockObserver = MockObserver()
         self.exportAsXmlObservable.attach(self.mockObserver)
 
-    def test_fileNameSetAs_WhenProvidedAFileName_NotifiesObserversAboutFileNameForExport(self):
-        self.exportAsXmlObservable.fileNameSetAs("some-file")
-        self.assertEqual("some-file", self.mockObserver.fileNameThatWasSet)
-
     def test_exportAsXml_InvokesExportAsXmlActionAndNotifiesObserversAboutResult(self):
-        self.exportAsXmlObservable.exportAsXml()
+        self.exportAsXmlObservable.exportAsXml("some-file")
+        self.mockShell.writeFile.assert_called_once_with("some-file", unittest.mock.ANY)
         self.assertTrue(self.mockObserver.xmlExported)
