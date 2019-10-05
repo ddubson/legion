@@ -26,9 +26,7 @@ class QtExportAsXmlObserver(AbstractExportAsXmlObserver):
 
     def onXmlExportReceive(self, xmlPayload: str) -> None:
         self.promptWithSaveFileDialog()
-        print(f"{xmlPayload} was the xml.")
 
     def promptWithSaveFileDialog(self):
         filename, _ = QFileDialog.getSaveFileName(self.mainAppWindow, 'Export session as XML', '.',
                                                   filter='Exported Legion session (*.xml)')
-        print(f"filename: {filename}")

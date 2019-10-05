@@ -15,12 +15,21 @@ Copyright (c) 2018 GoVanguard
 
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
-from abc import abstractmethod
+from abc import abstractmethod, ABC
+from typing import List
 
-from app.actions.AbstractObservable import AbstractObservable
+from app.actions.updateProgress.AbstractUpdateProgressObserver import AbstractUpdateProgressObserver
 
 
-class AbstractUpdateProgressObservable(AbstractObservable):
+class AbstractUpdateProgressObservable(ABC):
+    _observers: List[AbstractUpdateProgressObserver] = []
+
+    def attach(self, observer: AbstractUpdateProgressObserver) -> None:
+        self._observers.append(observer)
+
+    def detach(self, observer: AbstractUpdateProgressObserver) -> None:
+        self._observers.remove(observer)
+
     @abstractmethod
     def updateProgress(self, progress):
         pass

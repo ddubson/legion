@@ -15,12 +15,21 @@ Copyright (c) 2018 GoVanguard
 
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
-from abc import abstractmethod
+from abc import abstractmethod, ABC
+from typing import List
 
-from app.actions.AbstractObservable import AbstractObservable
+from app.actions.exportSessionAsXml.AbstractExportAsXmlObserver import AbstractExportAsXmlObserver
 
 
-class AbstractExportAsXmlObservable(AbstractObservable):
+class AbstractExportAsXmlObservable(ABC):
+    _observers: List[AbstractExportAsXmlObserver] = []
+
+    def attach(self, observer: AbstractExportAsXmlObserver) -> None:
+        self._observers.append(observer)
+
+    def detach(self, observer: AbstractExportAsXmlObserver) -> None:
+        self._observers.remove(observer)
+
     @abstractmethod
     def notifyXmlExported(self, exportedXml) -> None:
         pass

@@ -15,12 +15,10 @@ Copyright (c) 2018 GoVanguard
 
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
-from abc import abstractmethod
-
-from app.actions.AbstractObserver import AbstractObserver
+from abc import abstractmethod, ABC
 
 
-class AbstractUpdateProgressObserver(AbstractObserver):
+class AbstractUpdateProgressObserver(ABC):
     @abstractmethod
     def onProgressUpdate(self, progress) -> None:
         pass

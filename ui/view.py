@@ -26,10 +26,8 @@ from ui.addHostDialog import *
 from ui.ancillaryDialog import *
 from ui.bindActions import bindTriggerAction, bindSelectionChangedAction, bindClickAction, bindCurrentChangedAction, \
     bindDoubleClickAction, bindSectionResizeAction, bindCustomContextMenuRequestAction
-from app.shell.Shell import Shell
 from ui.gui import *
 from ui.dialogs import *
-from ui.observers.QtExportAsXmlObserver import QtExportAsXmlObserver
 from ui.settingsDialog import *
 from ui.configDialog import *
 from ui.dialogs import *
