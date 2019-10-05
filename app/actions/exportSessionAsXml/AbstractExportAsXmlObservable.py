@@ -33,3 +33,7 @@ class AbstractExportAsXmlObservable(ABC):
     @abstractmethod
     def notifyXmlExported(self, exportedXml) -> None:
         pass
+
+    @abstractmethod
+    def notifyFileNameSet(self, fileName: str) -> None:
+        pass

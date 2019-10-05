@@ -16,18 +16,7 @@ Copyright (c) 2018 GoVanguard
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
 import unittest
-from unittest.mock import patch, MagicMock
 
 
 class QtExportAsXmlObserverTest(unittest.TestCase):
-    @patch("PyQt5.QtWidgets.QFileDialog")
-    def setUp(self, fileDialog) -> None:
-        from ui.observers.QtExportAsXmlObserver import QtExportAsXmlObserver
-        self.fileDialog = fileDialog
-        self.fileDialog.getSaveFileName.return_value = ("some-file", "")
-        self.mainAppWindow = MagicMock()
-        self.qtExportAsXmlObserver = QtExportAsXmlObserver(self.mainAppWindow)
-
-    def test_onXmlExportReceive_PromptsForSaveXml(self):
-        self.qtExportAsXmlObserver.onXmlExportReceive("some-xml")
-        self.fileDialog.getSaveFileName.assert_called_once()
+    pass

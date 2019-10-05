@@ -21,7 +21,18 @@ from app.actions.exportSessionAsXml.AbstractExportAsXmlObservable import Abstrac
 class ExportAsXmlObservable(AbstractExportAsXmlObservable):
     def notifyXmlExported(self, exportedXml) -> None:
         for observer in self._observers:
-            observer.onXmlExportReceive(exportedXml)
+            observer.onExportedSuccessfully()
 
-    def exportAsXml(self):
-        self.notifyXmlExported("<my-xml-session></my-xml-session>")
+    def notifyFileNameSet(self, fileName: str) -> None:
+        for observer in self._observers:
+            observer.onFileNameSet(fileName)
+
+    def fileNameSetAs(self, fileName: str) -> None:
+        self.notifyFileNameSet(fileName)
+
+    def exportAsXml(self) -> None:
+        fileToExport = open("my-xml-session.xml", "w+")
+        fileToExport.write("<my-xml-session></my-xml-session>")
+        fileToExport.close()
+        print(f"file exported!")
+        self.notifyXmlExported()

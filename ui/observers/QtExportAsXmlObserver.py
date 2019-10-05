@@ -15,7 +15,6 @@ Copyright (c) 2018 GoVanguard
 
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
-from PyQt5.QtWidgets import QFileDialog
 
 from app.actions.exportSessionAsXml.AbstractExportAsXmlObserver import AbstractExportAsXmlObserver
 
@@ -24,9 +23,8 @@ class QtExportAsXmlObserver(AbstractExportAsXmlObserver):
     def __init__(self, mainAppWindow):
         self.mainAppWindow = mainAppWindow
 
-    def onXmlExportReceive(self, xmlPayload: str) -> None:
-        self.promptWithSaveFileDialog()
+    def onFileNameSet(self, fileName: str) -> None:
+        pass
 
-    def promptWithSaveFileDialog(self):
-        filename, _ = QFileDialog.getSaveFileName(self.mainAppWindow, 'Export session as XML', '.',
-                                                  filter='Exported Legion session (*.xml)')
+    def onExportedSuccessfully(self) -> None:
+        pass

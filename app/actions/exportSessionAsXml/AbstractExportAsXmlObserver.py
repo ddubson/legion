@@ -20,5 +20,9 @@ from abc import abstractmethod, ABC
 
 class AbstractExportAsXmlObserver(ABC):
     @abstractmethod
-    def onXmlExportReceive(self, xmlPayload: str) -> None:
+    def onExportedSuccessfully(self) -> None:
+        pass
+
+    @abstractmethod
+    def onFileNameSet(self, fileName: str) -> None:
         pass

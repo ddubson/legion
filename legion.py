@@ -100,7 +100,7 @@ if __name__ == "__main__":
     exportAsXmlObserver = QtExportAsXmlObserver(MainWindow)
     exportAsXmlObservable = ExportAsXmlObservable()
     exportAsXmlObservable.attach(exportAsXmlObserver)
-    exportAsXmlAction = ExportAsXmlAction(exportAsXmlObservable)
+    exportAsXmlAction = ExportAsXmlAction(MainWindow, exportAsXmlObservable)
 
     view = View(ui, MainWindow, shell, exportAsXmlAction)   # View prep (gui)
     controller = Controller(view, logic, hostRepository)   # Controller prep (communication between model and view)
