@@ -18,6 +18,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from app.shell.Shell import Shell
+from ui.ViewState import ViewState
 from ui.gui import *
 from ui.dialogs import *
 from ui.settingsDialog import *
@@ -39,7 +40,7 @@ import pandas as pd
 class View(QtCore.QObject):
     tick = QtCore.pyqtSignal(int, name="changed")                       # signal used to update the progress bar
     
-    def __init__(self, ui, ui_mainwindow, shell: Shell):
+    def __init__(self, viewState: ViewState, ui, ui_mainwindow, shell: Shell):
         QtCore.QObject.__init__(self)
         self.ui = ui
         self.ui_mainwindow = ui_mainwindow                              # TODO: retrieve window dimensions/location from settings
@@ -54,6 +55,7 @@ class View(QtCore.QObject):
         self.toolsTableViewSort = 'desc'
         self.toolsTableViewSortColumn = 'id'
         self.shell = shell
+        self.viewState = viewState
 
     def setController(self, controller):                                # the view needs access to controller methods to link gui actions with real actions
         self.controller = controller
@@ -77,8 +79,7 @@ class View(QtCore.QObject):
 
     # initialisations (globals, etc)
     def start(self, title='*untitled'):
-        self.dirty = False                                              # to know if the project has been saved
-        self.firstSave = True                                           # to know if we should use the save as dialog (should probably be False until we add/import a host)
+        self.viewState = ViewState()
         self.hostTabs = dict()                                          # to keep track of which tabs should be displayed for each host
         self.bruteTabCount = 1                                          # to keep track of the numbering of the bruteforce tabs (incremented when a new tab is added)
         
@@ -225,10 +226,10 @@ class View(QtCore.QObject):
         return dialog
         
     def setDirty(self, status=True):                                    # this function is called for example when the user edits notes
-        self.dirty = status     
+        self.viewState.dirty = status
         title = ''
         
-        if self.dirty:
+        if self.viewState.dirty:
             title = '*'
         if self.controller.isTempProject():
             title += 'untitled'
@@ -265,7 +266,7 @@ class View(QtCore.QObject):
         return True
 
     def dealWithCurrentProject(self, exiting=False):                    # returns True if we can proceed with: creating/opening a project or exiting
-        if self.dirty:                                                  # if there are unsaved changes, show save dialog first
+        if self.viewState.dirty:                                                  # if there are unsaved changes, show save dialog first
             if not self.saveOrDiscard():                                # if the user canceled, stop
                 return False
         
@@ -310,7 +311,7 @@ class View(QtCore.QObject):
                     projectType = 'sparta'
                                 
                 self.controller.openExistingProject(filename, projectType)
-                self.firstSave = False                                  # overwrite this variable because we are opening an existing file
+                self.viewState.firstSave = False                        # overwrite this variable because we are opening an existing file
                 self.displayAddHostsOverlay(False)                      # do not show the overlay because the hosttableview is already populated
             else:
                 log.info('No file chosen..')
@@ -320,7 +321,7 @@ class View(QtCore.QObject):
     
     def saveProject(self):
         self.ui.statusbar.showMessage('Saving..')
-        if self.firstSave:
+        if self.viewState.firstSave:
             self.saveProjectAs()
         else:
             log.info('Saving project..')
@@ -363,7 +364,7 @@ class View(QtCore.QObject):
 
         if not filename == '':          
             self.setDirty(False)
-            self.firstSave = False
+            self.viewState.firstSave = False
             self.ui.statusbar.showMessage('Saved!', msecs=1000)
             self.controller.updateOutputFolder()
             log.info('Saved!')
@@ -587,8 +588,8 @@ class View(QtCore.QObject):
                     self.ui.DisplayWidget.findChild(QtWidgets.QPlainTextEdit).setParent(None)
 
                 tabs = []                                               # fetch tab list for this host (if any)
-                if str(ip) in self.hostTabs:
-                    tabs = self.hostTabs[str(ip)]
+                if str(ip) in self.viewState.hostTabs:
+                    tabs = self.viewState.hostTabs[str(ip)]
                 
                 for tab in tabs:                                        # place the tool output textview in the tools display panel
                     if tab.findChild(QtWidgets.QPlainTextEdit) and str(tab.findChild(QtWidgets.QPlainTextEdit).property('dbId')) == str(self.tool_host_clicked):
@@ -1114,7 +1115,7 @@ class View(QtCore.QObject):
         self.lastHostIdClicked = str(hostid)
         note = self.controller.getNoteFromDB(hostid)
         
-        saved_dirty = self.dirty                                        # save the status so we can restore it after we update the note panel
+        saved_dirty = self.viewState.dirty                                        # save the status so we can restore it after we update the note panel
         self.ui.NotesTextEdit.clear()                                   # clear the text box from the previous notes
             
         if note:
@@ -1304,15 +1305,15 @@ class View(QtCore.QObject):
             tabindex = self.ui.ServicesTabWidget.addTab(tempWidget, str(tabTitle))
     
         hosttabs = []                                                   # fetch tab list for this host (if any)
-        if str(ip) in self.hostTabs:
-            hosttabs = self.hostTabs[str(ip)]
+        if str(ip) in self.viewState.hostTabs:
+            hosttabs = self.viewState.hostTabs[str(ip)]
         
         if 'screenshot' in str(tabTitle):
             hosttabs.append(tempWidget.scrollArea)                      # add the new tab to the list
         else:
             hosttabs.append(tempWidget)                                 # add the new tab to the list
         
-        self.hostTabs.update({str(ip):hosttabs})
+        self.viewState.hostTabs.update({str(ip):hosttabs})
 
         return tempTextView
 
@@ -1370,11 +1371,11 @@ class View(QtCore.QObject):
 
         # remove tab from host tabs list
         hosttabs = []
-        for ip in self.hostTabs.keys():
-            if self.ui.ServicesTabWidget.currentWidget() in self.hostTabs[ip]:
-                hosttabs = self.hostTabs[ip]
+        for ip in self.viewState.hostTabs.keys():
+            if self.ui.ServicesTabWidget.currentWidget() in self.viewState.hostTabs[ip]:
+                hosttabs = self.viewState.hostTabs[ip]
                 hosttabs.remove(self.ui.ServicesTabWidget.currentWidget())
-                self.hostTabs.update({ip:hosttabs})
+                self.viewState.hostTabs.update({ip:hosttabs})
                 break
 
         self.controller.storeCloseTabStatusInDB(dbId)                   # update the closed status in the db - getting the dbid 
@@ -1414,8 +1415,8 @@ class View(QtCore.QObject):
             self.tick.emit(int(totalprogress))
         
     def restoreToolTabsForHost(self, ip):
-        if (self.hostTabs) and (ip in self.hostTabs):
-            tabs = self.hostTabs[ip]    # use the ip as a key to retrieve its list of tooltabs
+        if (self.viewState.hostTabs) and (ip in self.viewState.hostTabs):
+            tabs = self.viewState.hostTabs[ip]    # use the ip as a key to retrieve its list of tooltabs
             for tab in tabs:
                 # do not display hydra and nmap tabs when restoring for that host
                 if not 'hydra' in tab.objectName() and not 'nmap' in tab.objectName():                  
@@ -1426,8 +1427,8 @@ class View(QtCore.QObject):
         if self.ui.DisplayWidget.findChild(QtWidgets.QPlainTextEdit) == self.ui.toolOutputTextView:
             return
         
-        for host in self.hostTabs.keys():
-            hosttabs = self.hostTabs[host]
+        for host in self.viewState.hostTabs.keys():
+            hosttabs = self.viewState.hostTabs[host]
             for tab in hosttabs:
                 if not 'screenshot' in str(tab.objectName()) and not tab.findChild(QtWidgets.QPlainTextEdit):
                     tab.layout().addWidget(self.ui.DisplayWidget.findChild(QtWidgets.QPlainTextEdit))
@@ -1504,11 +1505,11 @@ class View(QtCore.QObject):
             bWidget.setObjectName(str("hydra"+" ("+bWidget.getPort()+"/tcp)"))
             
             hosttabs = []                                               # add widget to host tabs (needed to be able to move the widget between brute/tools tabs)
-            if str(bWidget.ip) in self.hostTabs:
-                hosttabs = self.hostTabs[str(bWidget.ip)]
+            if str(bWidget.ip) in self.viewState.hostTabs:
+                hosttabs = self.viewState.hostTabs[str(bWidget.ip)]
                 
             hosttabs.append(bWidget)
-            self.hostTabs.update({str(bWidget.ip):hosttabs})
+            self.viewState.hostTabs.update({str(bWidget.ip):hosttabs})
             
             bWidget.pid = self.controller.runCommand("hydra", bWidget.objectName(), bWidget.ip, bWidget.getPort(), 'tcp', unicode(hydraCommand), getTimestamp(True), bWidget.outputfile, bWidget.display)
             bWidget.runButton.clicked.disconnect()
@@ -1535,13 +1536,13 @@ class View(QtCore.QObject):
         self.createNewTabForHost(str(bWidget.ip), str(bWidget.objectName()), restoring=True, content=unicode(bWidget.display.toPlainText())).setProperty('dbId', str(bWidget.display.property('dbId')))
         
         hosttabs = []                                                   # go through host tabs and find the correct bWidget
-        if str(bWidget.ip) in self.hostTabs:
-            hosttabs = self.hostTabs[str(bWidget.ip)]
+        if str(bWidget.ip) in self.viewState.hostTabs:
+            hosttabs = self.viewState.hostTabs[str(bWidget.ip)]
 
         if hosttabs.count(bWidget) > 1:
             hosttabs.remove(bWidget)
         
-        self.hostTabs.update({str(bWidget.ip):hosttabs})
+        self.viewState.hostTabs.update({str(bWidget.ip):hosttabs})
 
         bWidget.runButton.clicked.disconnect()
         bWidget.runButton.clicked.connect(lambda: self.callHydra(bWidget))
