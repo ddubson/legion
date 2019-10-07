@@ -15,6 +15,7 @@ Copyright (c) 2018 GoVanguard
 
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
+from app.auxiliary import Filters
 
 
 # Defines the state of the UI at any given moment
@@ -26,3 +27,9 @@ class ViewState:
     firstSave = True
     # Indicator of which tabs should be displayed for each host (default: empty dictionary)
     hostTabs = dict()
+    # Indicator of the numbering of the bruteforce tabs, incremented when a new tab is added (default: 1)
+    bruteTabCount = 1
+    # to choose what to display in each panel (default: base filters)
+    filters = Filters()
+    # Indicator of which host was clicked last (default: None)
+    lastHostIdClicked = ''

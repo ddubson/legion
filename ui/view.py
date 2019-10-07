@@ -80,14 +80,8 @@ class View(QtCore.QObject):
     # initialisations (globals, etc)
     def start(self, title='*untitled'):
         self.viewState = ViewState()
-        self.hostTabs = dict()                                          # to keep track of which tabs should be displayed for each host
-        self.bruteTabCount = 1                                          # to keep track of the numbering of the bruteforce tabs (incremented when a new tab is added)
-        
-        self.filters = Filters()                                        # to choose what to display in each panel
-
         self.ui.keywordTextInput.setText('')                            # clear keyword filter
 
-        self.lastHostIdClicked = ''                                     # TODO: check if we can get rid of this one.
         self.ip_clicked = ''                                            # useful when updating interfaces (serves as memory)
         self.service_clicked = ''                                       # useful when updating interfaces (serves as memory)
         self.tool_clicked = ''                                          # useful when updating interfaces (serves as memory)
@@ -325,7 +319,7 @@ class View(QtCore.QObject):
             self.saveProjectAs()
         else:
             log.info('Saving project..')
-            self.controller.saveProject(self.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
+            self.controller.saveProject(self.viewState.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
 
             self.setDirty(False)
             self.ui.statusbar.showMessage('Saved!', msecs=1000)
@@ -338,7 +332,7 @@ class View(QtCore.QObject):
         self.ui.statusbar.showMessage('Saving..')
         log.info('Saving project..')
 
-        self.controller.saveProject(self.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())        
+        self.controller.saveProject(self.viewState.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
 
         filename = QtWidgets.QFileDialog.getSaveFileName(self.ui.centralwidget, 'Save project as', self.controller.getCWD(), filter='Legion session (*.legion)', options=QtWidgets.QFileDialog.DontConfirmOverwrite)[0]
             
@@ -605,17 +599,17 @@ class View(QtCore.QObject):
         self.ui.FilterAdvancedButton.clicked.connect(self.advancedFilterClick)
 
     def advancedFilterClick(self, current):
-        self.filterdialog.setCurrentFilters(self.filters.getFilters())  # to make sure we don't show filters than have been clicked but cancelled
+        self.filterdialog.setCurrentFilters(self.viewState.filters.getFilters())  # to make sure we don't show filters than have been clicked but cancelled
         self.filterdialog.show()
 
     def updateFilter(self):
         f = self.filterdialog.getFilters()
-        self.filters.apply(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8])
+        self.viewState.filters.apply(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8])
         self.ui.keywordTextInput.setText(" ".join(f[8]))
         self.updateInterface()
 
     def updateFilterKeywords(self):
-        self.filters.setKeywords(unicode(self.ui.keywordTextInput.text()).split())
+        self.viewState.filters.setKeywords(unicode(self.ui.keywordTextInput.text()).split())
         self.updateInterface()
 
     ###
@@ -691,7 +685,7 @@ class View(QtCore.QObject):
             elif selectedTab == 'Services':
                 self.ui.ServicesTabWidget.setCurrentIndex(0)                
                 self.removeToolTabs(0)                                  # remove the tool tabs
-                self.controller.saveProject(self.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
+                self.controller.saveProject(self.viewState.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
                 if self.lazy_update_services == True:
                     self.updateServiceNamesTableView()
                 self.serviceNamesTableClick()
@@ -699,7 +693,7 @@ class View(QtCore.QObject):
             #elif selectedTab == 'CVEs':
             #    self.ui.ServicesTabWidget.setCurrentIndex(0)
             #    self.removeToolTabs(0)                                  # remove the tool tabs
-            #    self.controller.saveProject(self.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
+            #    self.controller.saveProject(self.viewState.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
             #    if self.lazy_update_services == True:
             #        self.updateServiceNamesTableView()
             #    self.serviceNamesTableClick()
@@ -935,8 +929,7 @@ class View(QtCore.QObject):
 
     def updateHostsTableView(self): 
         headers = ["Id", "OS", "Accuracy", "Host", "IPv4", "IPv6", "Mac", "Status", "Hostname", "Vendor", "Uptime", "Lastboot", "Distance", "CheckedHost", "State", "Count", "Closed"]
-        print(str(self.controller.getHostsFromDB(self.filters)))
-        self.HostsTableModel = HostsTableModel(self.controller.getHostsFromDB(self.filters), headers)
+        self.HostsTableModel = HostsTableModel(self.controller.getHostsFromDB(self.viewState.filters), headers)
         self.ui.HostsTableView.setModel(self.HostsTableModel)
 
         self.lazy_update_hosts = False                                  # to indicate that it doesn't need to be updated anymore
@@ -962,7 +955,7 @@ class View(QtCore.QObject):
 
     def updateServiceNamesTableView(self):
         headers = ["Name"]
-        self.ServiceNamesTableModel = ServiceNamesTableModel(self.controller.getServiceNamesFromDB(self.filters), headers)
+        self.ServiceNamesTableModel = ServiceNamesTableModel(self.controller.getServiceNamesFromDB(self.viewState.filters), headers)
         self.ui.ServiceNamesTableView.setModel(self.ServiceNamesTableModel)
 
         self.lazy_update_services = False                               # to indicate that it doesn't need to be updated anymore
@@ -982,13 +975,13 @@ class View(QtCore.QObject):
 
     def setupToolsTableView(self):
         headers = ["Progress", "Display", "Elapsed", "Est. Remaining", "Pid", "Name", "Tool", "Host", "Port", "Protocol", "Command", "Start time", "End time", "OutputFile", "Output", "Status", "Closed"]
-        self.ToolsTableModel = ProcessesTableModel(self,self.controller.getProcessesFromDB(self.filters, showProcesses = 'noNmap', sort = self.toolsTableViewSort, ncol = self.toolsTableViewSortColumn), headers)
+        self.ToolsTableModel = ProcessesTableModel(self,self.controller.getProcessesFromDB(self.viewState.filters, showProcesses = 'noNmap', sort = self.toolsTableViewSort, ncol = self.toolsTableViewSortColumn), headers)
         self.ui.ToolsTableView.setModel(self.ToolsTableModel)
 
     def updateToolsTableView(self):
         if self.ui.MainTabWidget.tabText(self.ui.MainTabWidget.currentIndex()) == 'Scan' and self.ui.HostsTabWidget.tabText(self.ui.HostsTabWidget.currentIndex()) == 'Tools':
             headers = ["Progress", "Display", "Elapsed", "Est. Remaining", "Pid", "Name", "Tool", "Host", "Port", "Protocol", "Command", "Start time", "End time", "OutputFile", "Output", "Status", "Closed"]
-            self.ToolsTableModel.setDataList(self.controller.getProcessesFromDB(self.filters, showProcesses = 'noNmap', sort = self.toolsTableViewSort, ncol = self.toolsTableViewSortColumn))
+            self.ToolsTableModel.setDataList(self.controller.getProcessesFromDB(self.viewState.filters, showProcesses = 'noNmap', sort = self.toolsTableViewSort, ncol = self.toolsTableViewSortColumn))
             self.ui.ToolsTableView.repaint()
             self.ui.ToolsTableView.update()
 
@@ -1015,7 +1008,7 @@ class View(QtCore.QObject):
     
     def updateServiceTableView(self, hostIP):
         headers = ["Host", "Port", "Port", "Protocol", "State", "HostId", "ServiceId", "Name", "Product", "Version", "Extrainfo", "Fingerprint"]
-        self.ServicesTableModel = ServicesTableModel(self.controller.getPortsAndServicesForHostFromDB(hostIP, self.filters), headers)
+        self.ServicesTableModel = ServicesTableModel(self.controller.getPortsAndServicesForHostFromDB(hostIP, self.viewState.filters), headers)
         self.ui.ServicesTableView.setModel(self.ServicesTableModel)
 
         for i in range(0, len(headers)):                                # reset all the hidden columns
@@ -1028,7 +1021,7 @@ class View(QtCore.QObject):
 
     def updatePortsByServiceTableView(self, serviceName):
         headers = ["Host", "Port", "Port", "Protocol", "State", "HostId", "ServiceId", "Name", "Product", "Version", "Extrainfo", "Fingerprint"]
-        self.PortsByServiceTableModel = ServicesTableModel(self.controller.getHostsAndPortsForServiceFromDB(serviceName, self.filters), headers)
+        self.PortsByServiceTableModel = ServicesTableModel(self.controller.getHostsAndPortsForServiceFromDB(serviceName, self.viewState.filters), headers)
         self.ui.ServicesTableView.setModel(self.PortsByServiceTableModel)
 
         for i in range(0, len(headers)):                                # reset all the hidden columns
@@ -1112,7 +1105,7 @@ class View(QtCore.QObject):
 
     # TODO: check if this hack can be improved because we are calling setDirty more than we need
     def updateNotesView(self, hostid):
-        self.lastHostIdClicked = str(hostid)
+        self.viewState.lastHostIdClicked = str(hostid)
         note = self.controller.getNoteFromDB(hostid)
         
         saved_dirty = self.viewState.dirty                                        # save the status so we can restore it after we update the note panel
@@ -1148,13 +1141,12 @@ class View(QtCore.QObject):
             self.ui.ToolHostsTableView.selectRow(row)
             self.toolHostsClick()
 
-
     def updateRightPanel(self, hostIP):
         self.updateServiceTableView(hostIP)
         self.updateScriptsView(hostIP)
         self.updateCvesByHostView(hostIP)
         self.updateInformationView(hostIP)                              # populate host info tab
-        self.controller.saveProject(self.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
+        self.controller.saveProject(self.viewState.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
 
         if hostIP:
             self.updateNotesView(self.HostsTableModel.getHostIdForRow(self.HostsTableModel.getRowForIp(hostIP)))
@@ -1204,13 +1196,13 @@ class View(QtCore.QObject):
 
     def setupProcessesTableView(self):
         headers = ["Progress", "Display", "Elapsed", "Est. Remaining", "Pid", "Name", "Tool", "Host", "Port", "Protocol", "Command", "Start time", "End time", "OutputFile", "Output", "Status", "Closed"]
-        self.ProcessesTableModel = ProcessesTableModel(self,self.controller.getProcessesFromDB(self.filters, showProcesses = True, sort = self.processesTableViewSort, ncol = self.processesTableViewSortColumn), headers)
+        self.ProcessesTableModel = ProcessesTableModel(self,self.controller.getProcessesFromDB(self.viewState.filters, showProcesses = True, sort = self.processesTableViewSort, ncol = self.processesTableViewSortColumn), headers)
         self.ui.ProcessesTableView.setModel(self.ProcessesTableModel)
         self.ProcessesTableModel.sort(15, Qt.DescendingOrder)
         
     def updateProcessesTableView(self):
         headers = ["Progress", "Display", "Elapsed", "Est. Remaining", "Pid", "Name", "Tool", "Host", "Port", "Protocol", "Command", "Start time", "End time", "OutputFile", "Output", "Status", "Closed"]
-        self.ProcessesTableModel.setDataList(self.controller.getProcessesFromDB(self.filters, showProcesses = True, sort = self.processesTableViewSort, ncol = self.processesTableViewSortColumn))
+        self.ProcessesTableModel.setDataList(self.controller.getProcessesFromDB(self.viewState.filters, showProcesses = True, sort = self.processesTableViewSort, ncol = self.processesTableViewSortColumn))
         self.ui.ProcessesTableView.repaint()
         self.ui.ProcessesTableView.update()
 
@@ -1395,7 +1387,7 @@ class View(QtCore.QObject):
 
     # this function restores the tool tabs based on the DB content (should be called when opening an existing project).
     def restoreToolTabs(self):
-        tools = self.controller.getProcessesFromDB(self.filters, showProcesses=False) # false means we are fetching processes with display flag=False, which is the case for every process once a project is closed.
+        tools = self.controller.getProcessesFromDB(self.viewState.filters, showProcesses=False) # false means we are fetching processes with display flag=False, which is the case for every process once a project is closed.
         nbr = len(tools)                                                # show a progress bar because this could take long
         if nbr==0:                                          
             nbr=1
@@ -1446,8 +1438,8 @@ class View(QtCore.QObject):
         self.ui.statusbar.showMessage('Sending to Brute: '+str(ip)+':'+str(port)+' ('+str(service)+')', msecs=1000)
         bWidget = BruteWidget(ip, port, service, self.controller.getSettings())
         bWidget.runButton.clicked.connect(lambda: self.callHydra(bWidget))
-        self.ui.BruteTabWidget.addTab(bWidget, str(self.bruteTabCount)) 
-        self.bruteTabCount += 1                                                     # update tab count
+        self.ui.BruteTabWidget.addTab(bWidget, str(self.viewState.bruteTabCount))
+        self.viewState.bruteTabCount += 1                                                     # update tab count
         self.ui.BruteTabWidget.setCurrentIndex(self.ui.BruteTabWidget.count()-1)    # show the last added tab in the brute widget
 
     def closeBruteTab(self, index):
