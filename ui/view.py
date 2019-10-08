@@ -82,15 +82,6 @@ class View(QtCore.QObject):
         self.viewState = ViewState()
         self.ui.keywordTextInput.setText('')                            # clear keyword filter
 
-        self.ip_clicked = ''                                            # useful when updating interfaces (serves as memory)
-        self.service_clicked = ''                                       # useful when updating interfaces (serves as memory)
-        self.tool_clicked = ''                                          # useful when updating interfaces (serves as memory)
-        self.script_clicked = ''                                        # useful when updating interfaces (serves as memory)
-        self.tool_host_clicked = ''                                     # useful when updating interfaces (serves as memory)
-        self.lazy_update_hosts = False                                  # these variables indicate that the corresponding table needs to be updated.
-        self.lazy_update_services = False                               # 'lazy' means we only update a table at the last possible minute - before the user needs to see it
-        self.lazy_update_tools = False
-        self.menuVisible = False                                        # to know if a context menu is showing (important to avoid disrupting the user)
         self.ProcessesTableModel = None                                 # fixes bug when sorting processes for the first time
         self.ToolsTableModel = None
         self.setupProcessesTableView()
@@ -505,12 +496,12 @@ class View(QtCore.QObject):
             row = self.ui.HostsTableView.selectionModel().selectedRows()[len(self.ui.HostsTableView.selectionModel().selectedRows())-1].row()
             print(row)
             ip = self.HostsTableModel.getHostIPForRow(row)
-            self.ip_clicked = ip
+            self.viewState.ip_clicked = ip
             save = self.ui.ServicesTabWidget.currentIndex()
             self.removeToolTabs()
-            self.restoreToolTabsForHost(self.ip_clicked)
+            self.restoreToolTabsForHost(self.viewState.ip_clicked)
             self.ui.ServicesTabWidget.setCurrentIndex(save)             # display services tab if we are coming from a dynamic tab (non-fixed)
-            self.updateRightPanel(self.ip_clicked)
+            self.updateRightPanel(self.viewState.ip_clicked)
         else:
             self.removeToolTabs()               
             self.updateRightPanel('')
@@ -524,8 +515,8 @@ class View(QtCore.QObject):
         if self.ui.ServiceNamesTableView.selectionModel().selectedRows():
             row = self.ui.ServiceNamesTableView.selectionModel().selectedRows()[len(self.ui.ServiceNamesTableView.selectionModel().selectedRows())-1].row()
             print(row)
-            self.service_clicked = self.ServiceNamesTableModel.getServiceNameForRow(row)
-            self.updatePortsByServiceTableView(self.service_clicked)
+            self.viewState.service_clicked = self.ServiceNamesTableModel.getServiceNameForRow(row)
+            self.updatePortsByServiceTableView(self.viewState.service_clicked)
         
     ###
     
@@ -536,9 +527,9 @@ class View(QtCore.QObject):
         if self.ui.ToolsTableView.selectionModel().selectedRows():
             row = self.ui.ToolsTableView.selectionModel().selectedRows()[len(self.ui.ToolsTableView.selectionModel().selectedRows())-1].row()
             print(row)
-            self.tool_clicked = self.ToolsTableModel.getToolNameForRow(row)
-            self.updateToolHostsTableView(self.tool_clicked)
-            self.displayScreenshots(self.tool_clicked == 'screenshooter')   # if we clicked on the screenshooter we need to display the screenshot widget
+            self.viewState.tool_clicked = self.ToolsTableModel.getToolNameForRow(row)
+            self.updateToolHostsTableView(self.viewState.tool_clicked)
+            self.displayScreenshots(self.viewState.tool_clicked == 'screenshooter')   # if we clicked on the screenshooter we need to display the screenshot widget
 
         # update the updateToolHostsTableView when the user closes all the host tabs
         # TODO: this doesn't seem right
@@ -555,8 +546,8 @@ class View(QtCore.QObject):
         if self.ui.ScriptsTableView.selectionModel().selectedRows():
             row = self.ui.ScriptsTableView.selectionModel().selectedRows()[len(self.ui.ScriptsTableView.selectionModel().selectedRows())-1].row()
             print(row)
-            self.script_clicked = self.ScriptsTableModel.getScriptDBIdForRow(row)
-            self.updateScriptsOutputView(self.script_clicked)
+            self.viewState.script_clicked = self.ScriptsTableModel.getScriptDBIdForRow(row)
+            self.updateScriptsOutputView(self.viewState.script_clicked)
                 
     ###
 
@@ -568,10 +559,10 @@ class View(QtCore.QObject):
         if self.ui.ToolHostsTableView.selectionModel().selectedRows():
             row = self.ui.ToolHostsTableView.selectionModel().selectedRows()[len(self.ui.ToolHostsTableView.selectionModel().selectedRows())-1].row()
             print(row)
-            self.tool_host_clicked = self.ToolHostsTableModel.getProcessIdForRow(row)
+            self.viewState.tool_host_clicked = self.ToolHostsTableModel.getProcessIdForRow(row)
             ip = self.ToolHostsTableModel.getIpForRow(row)
             
-            if self.tool_clicked == 'screenshooter':
+            if self.viewState.tool_clicked == 'screenshooter':
                 filename = self.ToolHostsTableModel.getOutputfileForRow(row)
                 self.ui.ScreenshotWidget.open(str(self.controller.getOutputFolder())+'/screenshots/'+str(filename))
             
@@ -586,7 +577,7 @@ class View(QtCore.QObject):
                     tabs = self.viewState.hostTabs[str(ip)]
                 
                 for tab in tabs:                                        # place the tool output textview in the tools display panel
-                    if tab.findChild(QtWidgets.QPlainTextEdit) and str(tab.findChild(QtWidgets.QPlainTextEdit).property('dbId')) == str(self.tool_host_clicked):
+                    if tab.findChild(QtWidgets.QPlainTextEdit) and str(tab.findChild(QtWidgets.QPlainTextEdit).property('dbId')) == str(self.viewState.tool_host_clicked):
                         self.ui.DisplayWidgetLayout.addWidget(tab.findChild(QtWidgets.QPlainTextEdit))
                         break
 
@@ -677,7 +668,7 @@ class View(QtCore.QObject):
 
                 self.restoreToolTabWidget()
                 ###
-                if self.lazy_update_hosts == True:
+                if self.viewState.lazy_update_hosts == True:
                     self.updateHostsTableView()
                 ###
                 self.hostTableClick()       
@@ -686,7 +677,7 @@ class View(QtCore.QObject):
                 self.ui.ServicesTabWidget.setCurrentIndex(0)                
                 self.removeToolTabs(0)                                  # remove the tool tabs
                 self.controller.saveProject(self.viewState.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
-                if self.lazy_update_services == True:
+                if self.viewState.lazy_update_services == True:
                     self.updateServiceNamesTableView()
                 self.serviceNamesTableClick()
 
@@ -694,7 +685,7 @@ class View(QtCore.QObject):
             #    self.ui.ServicesTabWidget.setCurrentIndex(0)
             #    self.removeToolTabs(0)                                  # remove the tool tabs
             #    self.controller.saveProject(self.viewState.lastHostIdClicked, self.ui.NotesTextEdit.toPlainText())
-            #    if self.lazy_update_services == True:
+            #    if self.viewState.lazy_update_services == True:
             #        self.updateServiceNamesTableView()
             #    self.serviceNamesTableClick()
                 
@@ -722,10 +713,10 @@ class View(QtCore.QObject):
 
     ###
     def setVisible(self):                                               # indicates that a context menu is showing so that the ui doesn't get updated disrupting the user
-        self.menuVisible = True
+        self.viewState.menuVisible = True
 
     def setInvisible(self):                                             # indicates that a context menu has now closed and any pending ui updates can take place now
-        self.menuVisible = False
+        self.viewState.menuVisible = False
     ###
     
     def connectHostsTableContextMenu(self):
@@ -734,7 +725,7 @@ class View(QtCore.QObject):
     def contextMenuHostsTableView(self, pos):
         if len(self.ui.HostsTableView.selectionModel().selectedRows()) > 0:
             row = self.ui.HostsTableView.selectionModel().selectedRows()[len(self.ui.HostsTableView.selectionModel().selectedRows())-1].row()
-            self.ip_clicked = self.HostsTableModel.getHostIPForRow(row) # because when we right click on a different host, we need to select it
+            self.viewState.ip_clicked = self.HostsTableModel.getHostIPForRow(row) # because when we right click on a different host, we need to select it
             self.ui.HostsTableView.selectRow(row)                       # select host when right-clicked
             self.hostTableClick()           
             
@@ -745,7 +736,7 @@ class View(QtCore.QObject):
             action = menu.exec_(self.ui.HostsTableView.viewport().mapToGlobal(pos))
 
             if action:
-                self.controller.handleHostAction(self.ip_clicked, hostid, actions, action)
+                self.controller.handleHostAction(self.viewState.ip_clicked, hostid, actions, action)
     
     ###
 
@@ -755,11 +746,11 @@ class View(QtCore.QObject):
     def contextMenuServiceNamesTableView(self, pos):
         if len(self.ui.ServiceNamesTableView.selectionModel().selectedRows()) > 0:
             row = self.ui.ServiceNamesTableView.selectionModel().selectedRows()[len(self.ui.ServiceNamesTableView.selectionModel().selectedRows())-1].row()
-            self.service_clicked = self.ServiceNamesTableModel.getServiceNameForRow(row)
+            self.viewState.service_clicked = self.ServiceNamesTableModel.getServiceNameForRow(row)
             self.ui.ServiceNamesTableView.selectRow(row)                # select service when right-clicked
             self.serviceNamesTableClick()
 
-            menu, actions, shiftPressed = self.controller.getContextMenuForServiceName(self.service_clicked)
+            menu, actions, shiftPressed = self.controller.getContextMenuForServiceName(self.viewState.service_clicked)
             menu.aboutToShow.connect(self.setVisible)
             menu.aboutToHide.connect(self.setInvisible)
             action = menu.exec_(self.ui.ServiceNamesTableView.viewport().mapToGlobal(pos))
@@ -835,7 +826,7 @@ class View(QtCore.QObject):
                 action = menu.exec_(self.ui.ToolHostsTableView.viewport().mapToGlobal(pos))
 
                 if action:
-                    self.controller.handleHostAction(self.ip_clicked, hostid, actions, action)              
+                    self.controller.handleHostAction(self.viewState.ip_clicked, hostid, actions, action)
     
     ###
 
@@ -932,7 +923,7 @@ class View(QtCore.QObject):
         self.HostsTableModel = HostsTableModel(self.controller.getHostsFromDB(self.viewState.filters), headers)
         self.ui.HostsTableView.setModel(self.HostsTableModel)
 
-        self.lazy_update_hosts = False                                  # to indicate that it doesn't need to be updated anymore
+        self.viewState.lazy_update_hosts = False                                  # to indicate that it doesn't need to be updated anymore
 
         for i in [0, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]:                   # hide some columns
             self.ui.HostsTableView.setColumnHidden(i, True)
@@ -944,8 +935,8 @@ class View(QtCore.QObject):
         for row in range(self.HostsTableModel.rowCount("")):
             ips.append(self.HostsTableModel.getHostIPForRow(row))
 
-        if self.ip_clicked in ips:                                      # the ip we previously clicked may not be visible anymore (eg: due to filters)
-            row = self.HostsTableModel.getRowForIp(self.ip_clicked)
+        if self.viewState.ip_clicked in ips:                                      # the ip we previously clicked may not be visible anymore (eg: due to filters)
+            row = self.HostsTableModel.getRowForIp(self.viewState.ip_clicked)
         else:
             row = 0                                                     # or select the first row
             
@@ -958,14 +949,14 @@ class View(QtCore.QObject):
         self.ServiceNamesTableModel = ServiceNamesTableModel(self.controller.getServiceNamesFromDB(self.viewState.filters), headers)
         self.ui.ServiceNamesTableView.setModel(self.ServiceNamesTableModel)
 
-        self.lazy_update_services = False                               # to indicate that it doesn't need to be updated anymore
+        self.viewState.lazy_update_services = False                               # to indicate that it doesn't need to be updated anymore
 
         services = []                                                   # ensure that there is always something selected
         for row in range(self.ServiceNamesTableModel.rowCount("")):
             services.append(self.ServiceNamesTableModel.getServiceNameForRow(row))
         
-        if self.service_clicked in services:                            # the service we previously clicked may not be visible anymore (eg: due to filters)
-            row = self.ServiceNamesTableModel.getRowForServiceName(self.service_clicked)
+        if self.viewState.service_clicked in services:                            # the service we previously clicked may not be visible anymore (eg: due to filters)
+            row = self.ServiceNamesTableModel.getRowForServiceName(self.viewState.service_clicked)
         else:
             row = 0                                                     # or select the first row
             
@@ -985,7 +976,7 @@ class View(QtCore.QObject):
             self.ui.ToolsTableView.repaint()
             self.ui.ToolsTableView.update()
 
-            self.lazy_update_tools = False                              # to indicate that it doesn't need to be updated anymore
+            self.viewState.lazy_update_tools = False                              # to indicate that it doesn't need to be updated anymore
 
             # Hides columns we don't want to see
             for i in [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:                # hide some columns
@@ -995,8 +986,8 @@ class View(QtCore.QObject):
             for row in range(self.ToolsTableModel.rowCount("")):
                 tools.append(self.ToolsTableModel.getToolNameForRow(row))
 
-            if self.tool_clicked in tools:                              # the tool we previously clicked may not be visible anymore (eg: due to filters)
-                row = self.ToolsTableModel.getRowForToolName(self.tool_clicked)
+            if self.viewState.tool_clicked in tools:                              # the tool we previously clicked may not be visible anymore (eg: due to filters)
+                row = self.ToolsTableModel.getRowForToolName(self.viewState.tool_clicked)
             else:
                 row = 0                                                 # or select the first row
                 
@@ -1071,8 +1062,8 @@ class View(QtCore.QObject):
         for row in range(self.ScriptsTableModel.rowCount("")):
             scripts.append(self.ScriptsTableModel.getScriptDBIdForRow(row))
 
-        if self.script_clicked in scripts:                              # the script we previously clicked may not be visible anymore (eg: due to filters)
-            row = self.ScriptsTableModel.getRowForDBId(self.script_clicked)
+        if self.viewState.script_clicked in scripts:                              # the script we previously clicked may not be visible anymore (eg: due to filters)
+            row = self.ScriptsTableModel.getRowForDBId(self.viewState.script_clicked)
 
         else:
             row = 0                                                     # or select the first row
@@ -1131,8 +1122,8 @@ class View(QtCore.QObject):
         for row in range(self.ToolHostsTableModel.rowCount("")):
             ids.append(self.ToolHostsTableModel.getProcessIdForRow(row))
 
-        if self.tool_host_clicked in ids:                               # the host we previously clicked may not be visible anymore (eg: due to filters)
-            row = self.ToolHostsTableModel.getRowForDBId(self.tool_host_clicked)
+        if self.viewState.tool_host_clicked in ids:                               # the host we previously clicked may not be visible anymore (eg: due to filters)
+            row = self.ToolHostsTableModel.getRowForDBId(self.viewState.tool_host_clicked)
 
         else:
             row = 0                                                     # or select the first row
@@ -1160,7 +1151,7 @@ class View(QtCore.QObject):
             self.ui.splitter_3.show()
             self.ui.splitter.setSizes([self.leftPanelSize, 0, size])                     # reset hoststableview width
             
-            if self.tool_clicked == 'screenshooter':
+            if self.viewState.tool_clicked == 'screenshooter':
                 self.displayScreenshots(True)
             else:
                 self.displayScreenshots(False)
@@ -1250,18 +1241,18 @@ class View(QtCore.QObject):
         
         if self.ui.HostsTabWidget.tabText(self.ui.HostsTabWidget.currentIndex()) == 'Hosts':
             self.updateHostsTableView()
-            self.lazy_update_services = True
-            self.lazy_update_tools = True
+            self.viewState.lazy_update_services = True
+            self.viewState.lazy_update_tools = True
             
         if self.ui.HostsTabWidget.tabText(self.ui.HostsTabWidget.currentIndex()) == 'Services':
             self.updateServiceNamesTableView()
-            self.lazy_update_hosts = True
-            self.lazy_update_tools = True           
+            self.viewState.lazy_update_hosts = True
+            self.viewState.lazy_update_tools = True
             
         if self.ui.HostsTabWidget.tabText(self.ui.HostsTabWidget.currentIndex()) == 'Tools':        
             self.updateToolsTableView()
-            self.lazy_update_hosts = True
-            self.lazy_update_services = True
+            self.viewState.lazy_update_hosts = True
+            self.viewState.lazy_update_services = True
         
     #################### TOOL TABS ####################
 

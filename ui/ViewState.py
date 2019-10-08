@@ -33,3 +33,21 @@ class ViewState:
     filters = Filters()
     # Indicator of which host was clicked last (default: None)
     lastHostIdClicked = ''
+    # Indicator of which IP Address was clicked on last (default: None)
+    ip_clicked = ''
+    # Indicator of which Service was clicked on last (default: None)
+    service_clicked = ''
+    # Indicator of which Tool was clicked on last (default: None)
+    tool_clicked = ''
+    # Indicator of which script was clicked on last (default: None)
+    script_clicked = ''
+    # Indicator of which tool host was clicked on last (default: None)
+    tool_host_clicked = ''
+    # these variables indicate that the corresponding table needs to be updated.
+    # 'lazy' means we only update a table at the last possible minute - before the user needs to see it
+    lazy_update_hosts = False
+    lazy_update_services = False
+    lazy_update_tools = False
+    # Indicator if a context menu is showing (important to avoid disrupting the user) (default: False)
+    menuVisible = False
+
