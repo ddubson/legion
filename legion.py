@@ -101,6 +101,8 @@ if __name__ == "__main__":
     log.info("Creating temporary project at application start...")
     logic.createNewTemporaryProject()
 
+    createNewProjectAction = CreateNewProjectAction(logic)
+
     viewState = ViewState()
     view = View(viewState, ui, MainWindow, shell)  # View prep (gui)
     onStartFn = lambda title: view.start(title)
