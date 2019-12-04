@@ -22,7 +22,10 @@ from app.actions.AbstractObserver import AbstractObserver
 
 
 class AbstractObservable(ABC):
-    _observers: List[AbstractObserver] = []
+    _observers: List[AbstractObserver]
+
+    def __init__(self):
+        self._observers = []
 
     def attach(self, observer):
         self._observers.append(observer)

@@ -193,11 +193,6 @@ class Controller:
 
     #################### ACTIONS ####################
 
-    def createNewProject(self):
-        self.view.closeProject()  # removes temp folder (if any)
-        self.logic.createNewTemporaryProject()
-        self.start()  # initialisations (globals, etc)
-
     def openExistingProject(self, filename, projectType='legion'):
         self.view.closeProject()
         self.view.importProgressWidget.reset('Opening project..')

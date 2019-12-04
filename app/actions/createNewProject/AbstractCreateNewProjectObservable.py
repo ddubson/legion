@@ -15,21 +15,19 @@ Copyright (c) 2018 GoVanguard
 
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
-from app.actions.updateProgress.AbstractUpdateProgressObservable import AbstractUpdateProgressObservable
+from abc import abstractmethod
+
+from app.actions.AbstractObservable import AbstractObservable
+from app.actions.AbstractObserver import AbstractObserver
 
 
-class UpdateProgressObservable(AbstractUpdateProgressObservable):
-    def __init__(self):
-        super().__init__()
+class AbstractCreateNewProjectObserver(AbstractObserver):
+    @abstractmethod
+    def onNewProjectCreated(self) -> None:
+        pass
 
-    def finished(self):
-        for observer in self._observers:
-            observer.onFinished()
 
-    def start(self):
-        for observer in self._observers:
-            observer.onStart()
-
-    def updateProgress(self, progress):
-        for observer in self._observers:
-            observer.onProgressUpdate(progress)
+class AbstractCreateNewProjectObservable(AbstractObservable):
+    @abstractmethod
+    def createNewProject(self) -> None:
+        pass

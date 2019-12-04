@@ -15,21 +15,16 @@ Copyright (c) 2018 GoVanguard
 
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
-from app.actions.updateProgress.AbstractUpdateProgressObservable import AbstractUpdateProgressObservable
+from app.actions.createNewProject.AbstractCreateNewProjectObservable import AbstractCreateNewProjectObservable
+from app.logic import Logic
 
 
-class UpdateProgressObservable(AbstractUpdateProgressObservable):
-    def __init__(self):
+class CreateNewProjectAction(AbstractCreateNewProjectObservable):
+    def __init__(self, logic: Logic):
         super().__init__()
+        self.logic = logic
 
-    def finished(self):
+    def createNewProject(self) -> None:
+        self.logic.createNewTemporaryProject()
         for observer in self._observers:
-            observer.onFinished()
-
-    def start(self):
-        for observer in self._observers:
-            observer.onStart()
-
-    def updateProgress(self, progress):
-        for observer in self._observers:
-            observer.onProgressUpdate(progress)
+            observer.onNewProjectCreated()
