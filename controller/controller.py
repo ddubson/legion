@@ -19,9 +19,11 @@ Copyright (c) 2018 GoVanguard
 
 import signal  # for file operations, to kill processes, for regex, for subprocesses
 import subprocess
+from typing import Callable
 
 from app.ApplicationInfo import applicationInfo
 from app.Screenshooter import Screenshooter
+from app.actions.createNewProject.CreateNewProjectAction import CreateNewProjectAction
 from app.actions.updateProgress.UpdateProgressObservable import UpdateProgressObservable
 from app.importers.NmapImporter import NmapImporter
 from app.importers.PythonImporter import PythonImporter
@@ -40,7 +42,7 @@ class Controller:
 
     # initialisations that will happen once - when the program is launched
     @timing
-    def __init__(self, view, logic):
+    def __init__(self, view, logic, onStartFn: Callable[[str], None]):
         self.logic = logic
         self.view = view
         self.view.setController(self)
@@ -52,10 +54,12 @@ class Controller:
         self.initPythonImporter()
         self.initScreenshooter()
         self.initBrowserOpener()
+        self.__onStartFn = onStartFn
         self.start()                                                    # initialisations (globals, etc)
         self.initTimers()
         self.processTimers = {}
         self.processMeasurements = {}
+        self.createNewProjectAction = CreateNewProjectAction(logic)
 
     # initialisations that will happen everytime we create/open a project - can happen several times in the
     # program's lifetime
@@ -69,7 +73,7 @@ class Controller:
         self.nmapImporter.setHostRepository(activeProject.repositoryContainer.hostRepository)
         self.pythonImporter.setDB(activeProject.database)
         self.updateOutputFolder()                                       # tell screenshooter where the output folder is
-        self.view.start(title)
+        self.__onStartFn(title)
 
     def initNmapImporter(self):
         updateProgressObservable = UpdateProgressObservable()

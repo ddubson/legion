@@ -101,15 +101,15 @@ if __name__ == "__main__":
     log.info("Creating temporary project at application start...")
     logic.createNewTemporaryProject()
 
-    createNewProjectAction = CreateNewProjectAction(logic)
-
     viewState = ViewState()
-    view = View(viewState, ui, MainWindow, shell, createNewProjectAction)  # View prep (gui)
-    controller = Controller(view, logic)  # Controller prep (communication between model and view)
+    view = View(viewState, ui, MainWindow, shell)  # View prep (gui)
+    onStartFn = lambda title: view.start(title)
+
+    controller = Controller(view, logic, onStartFn)  # Controller prep (communication between model and view)
     view.qss = qss_file
 
     createNewProjectObserver = CreateNewProjectObserver(controller)
-    createNewProjectAction.attach(createNewProjectObserver)
+    controller.createNewProjectAction.attach(createNewProjectObserver)
 
     myFilter = MyEventFilter(view, MainWindow)  # to capture events
     app.installEventFilter(myFilter)

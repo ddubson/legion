@@ -50,8 +50,7 @@ import pandas as pd
 class View(QtCore.QObject):
     tick = QtCore.pyqtSignal(int, name="changed")                       # signal used to update the progress bar
     
-    def __init__(self, viewState: ViewState, ui, ui_mainwindow, shell: Shell,
-                 createNewProjectAction: CreateNewProjectAction):
+    def __init__(self, viewState: ViewState, ui, ui_mainwindow, shell: Shell):
         QtCore.QObject.__init__(self)
         self.ui = ui
         self.ui_mainwindow = ui_mainwindow  # TODO: retrieve window dimensions/location from settings
@@ -67,7 +66,6 @@ class View(QtCore.QObject):
         self.toolsTableViewSortColumn = 'id'
         self.shell = shell
         self.viewState = viewState
-        self.createNewProjectAction = createNewProjectAction
 
     # the view needs access to controller methods to link gui actions with real actions
     def setController(self, controller):
@@ -291,9 +289,8 @@ class View(QtCore.QObject):
     def createNewProject(self):
         if self.dealWithCurrentProject():
             log.info('Creating new project..')
-            #TODO: $! self.controller.createNewProject()
             self.closeProject()  # removes temp folder (if any)
-            self.createNewProjectAction.createNewProject()
+            self.controller.createNewProjectAction.createNewProject()
 
     def connectOpenExistingProject(self):
         self.ui.actionOpen.triggered.connect(self.openExistingProject)
