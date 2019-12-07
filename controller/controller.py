@@ -19,9 +19,8 @@ Copyright (c) 2018 GoVanguard
 
 import signal  # for file operations, to kill processes, for regex, for subprocesses
 import subprocess
-from typing import Callable
+from typing import Callable, Any
 
-from app.ApplicationInfo import applicationInfo
 from app.Screenshooter import Screenshooter
 from app.actions.createNewProject.CreateNewProjectAction import CreateNewProjectAction
 from app.actions.updateProgress.UpdateProgressObservable import UpdateProgressObservable
@@ -42,12 +41,10 @@ class Controller:
 
     # initialisations that will happen once - when the program is launched
     @timing
-    def __init__(self, view, logic, onStartFn: Callable[[str], None]):
+    def __init__(self, view, logic, onControllerLoading: Callable[[Any], None], onStartFn: Callable[[str], None]):
         self.logic = logic
         self.view = view
-        self.view.setController(self)
-        self.view.startOnce()
-        self.view.startConnections()
+        onControllerLoading(self)
 
         self.loadSettings()  # creation of context menu actions from settings file and set up of various settings
         self.initNmapImporter()
@@ -55,7 +52,6 @@ class Controller:
         self.initScreenshooter()
         self.initBrowserOpener()
         self.__onStartFn = onStartFn
-        self.start()                                                    # initialisations (globals, etc)
         self.initTimers()
         self.processTimers = {}
         self.processMeasurements = {}

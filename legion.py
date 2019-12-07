@@ -104,11 +104,20 @@ if __name__ == "__main__":
     createNewProjectAction = CreateNewProjectAction(logic)
 
     viewState = ViewState()
-    view = View(viewState, ui, MainWindow, shell)  # View prep (gui)
-    onStartFn = lambda title: view.start(title)
-
-    controller = Controller(view, logic, onStartFn)  # Controller prep (communication between model and view)
+    view = View(viewState, ui, MainWindow, shell, createNewProjectAction)  # View prep (gui)
     view.qss = qss_file
+
+    def onControllerLoading(controller: Any) -> None:
+        view.setController(controller)
+        view.startOnce()
+        view.startConnections()
+
+    def onProjectRunStart(title: str) -> None:
+        view.start(title)
+
+    # Controller prep (communication between model and view)
+    controller = Controller(view, logic, onControllerLoading, onProjectRunStart)
+    controller.start()
 
     createNewProjectObserver = CreateNewProjectObserver(controller)
     controller.createNewProjectAction.attach(createNewProjectObserver)
