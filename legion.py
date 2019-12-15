@@ -90,7 +90,6 @@ if __name__ == "__main__":
     MainWindow.setStyleSheet(qss_file)
 
     shell = DefaultShell()
-
     repositoryFactory = RepositoryFactory(log)
     projectManager = ProjectManager(shell, repositoryFactory, log)
     nmapExporter = DefaultNmapExporter(shell)
@@ -98,13 +97,8 @@ if __name__ == "__main__":
     # Model prep (logic, db and models)
     logic = Logic(shell, projectManager, toolCoordinator)
 
-    log.info("Creating temporary project at application start...")
-    logic.createNewTemporaryProject()
-
-    createNewProjectAction = CreateNewProjectAction(logic)
-
     viewState = ViewState()
-    view = View(viewState, ui, MainWindow, shell, createNewProjectAction)  # View prep (gui)
+    view = View(viewState, ui, MainWindow, shell)  # View prep (gui)
     view.qss = qss_file
 
     def onControllerLoading(controller: Any) -> None:
@@ -117,10 +111,11 @@ if __name__ == "__main__":
 
     # Controller prep (communication between model and view)
     controller = Controller(view, logic, onControllerLoading, onProjectRunStart)
-    controller.start()
 
     createNewProjectObserver = CreateNewProjectObserver(controller)
     controller.createNewProjectAction.attach(createNewProjectObserver)
+    log.info("Creating temporary project at application start...")
+    controller.createNewProjectAction.createNewProject()
 
     myFilter = MyEventFilter(view, MainWindow)  # to capture events
     app.installEventFilter(myFilter)

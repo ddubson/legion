@@ -26,5 +26,8 @@ class CreateNewProjectAction(AbstractCreateNewProjectObservable):
 
     def createNewProject(self) -> None:
         self.logic.createNewTemporaryProject()
+        self.__notifyProjectCreated()
+
+    def __notifyProjectCreated(self):
         for observer in self._observers:
             observer.onNewProjectCreated()

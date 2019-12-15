@@ -22,11 +22,8 @@ from PyQt5.QtCore import *                                              # for fi
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from app.actions.createNewProject.CreateNewProjectAction import CreateNewProjectAction
 from app.ApplicationInfo import applicationInfo, getVersion
 from app.actions.createNewProject.CreateNewProjectAction import CreateNewProjectAction
-from app.shell.Shell import Shell
-from app.timing import getTimestamp
 from ui.ViewHeaders import serviceTableHeaders, hostTableHeaders, processTableHeaders, toolHostsTableHeaders, \
     scriptsTableHeaders, toolsTableHeaders, cvesTableHeaders, serviceNamesTableHeaders
 from ui.ViewState import ViewState
@@ -51,8 +48,7 @@ import pandas as pd
 class View(QtCore.QObject):
     tick = QtCore.pyqtSignal(int, name="changed")                       # signal used to update the progress bar
     
-    def __init__(self, viewState: ViewState, ui, ui_mainwindow, shell: Shell,
-                 createNewProjectAction: CreateNewProjectAction):
+    def __init__(self, viewState: ViewState, ui, ui_mainwindow, shell: Shell):
         QtCore.QObject.__init__(self)
         self.ui = ui
         self.ui_mainwindow = ui_mainwindow  # TODO: retrieve window dimensions/location from settings
@@ -68,7 +64,6 @@ class View(QtCore.QObject):
         self.toolsTableViewSortColumn = 'id'
         self.shell = shell
         self.viewState = viewState
-        self.createNewProjectAction = createNewProjectAction
 
     # the view needs access to controller methods to link gui actions with real actions
     def setController(self, controller):

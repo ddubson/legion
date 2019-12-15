@@ -16,13 +16,11 @@ Copyright (c) 2018 GoVanguard
 Author(s): Dmitriy Dubson (d.dubson@gmail.com)
 """
 from abc import ABC
-from typing import List
-
-from app.actions.AbstractObserver import AbstractObserver
+from typing import List, Any
 
 
 class AbstractObservable(ABC):
-    _observers: List[AbstractObserver]
+    _observers: List[Any]
 
     def __init__(self):
         self._observers = []
