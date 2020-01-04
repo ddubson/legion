@@ -20,9 +20,7 @@ from app.shell.DefaultShell import DefaultShell
 from app.tools.nmap.DefaultNmapExporter import DefaultNmapExporter
 from db.RepositoryFactory import RepositoryFactory
 from ui.eventfilter import MyEventFilter
-from ui.ViewState import ViewState
 from ui.gui import *
-from ui.gui import Ui_MainWindow
 
 startupLog = getStartupLogger()
 
