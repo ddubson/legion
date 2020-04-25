@@ -28,10 +28,10 @@ class TimingTest(unittest.TestCase):
     def test_getTimestamp_WhenInvokedWithNoParameters_ReturnsStandardFormattedTimestamp(self, getLogger):
         expectedStandardTimestampFormat = "%Y%m%d%H%M%S%f"
         currentTime = datetime.fromtimestamp(time())
-        self.assertEqual(getTimestamp()[:-3], currentTime.strftime(expectedStandardTimestampFormat)[:-3])
+        self.assertEqual(getTimestamp()[:-4], currentTime.strftime(expectedStandardTimestampFormat)[:-4])
 
     @patch('utilities.stenoLogging.get_logger')
     def test_getTimestamp_WhenInvokedWithHumanParameter_ReturnsHumanFormattedTimestamp(self, getLogger):
         expectedHumanTimestampFormat = "%d %b %Y %H:%M:%S.%f"
         currentTime = datetime.fromtimestamp(time())
-        self.assertEqual(getTimestamp(human=True)[:-3], currentTime.strftime(expectedHumanTimestampFormat)[:-3])
+        self.assertEqual(getTimestamp(human=True)[:-4], currentTime.strftime(expectedHumanTimestampFormat)[:-4])
